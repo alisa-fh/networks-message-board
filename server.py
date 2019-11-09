@@ -1,5 +1,7 @@
 from socket import *
 import sys
+import os
+import pickle
 serverIP = (sys.argv[1]);
 serverPort = int(sys.argv[2]);
 serverSocket = socket(AF_INET, SOCK_STREAM);
@@ -12,6 +14,12 @@ print('Server is ready to receive');
 while True:
     connectionSocket, addr = serverSocket.accept();
     recvMessage = connectionSocket.recv(1024).decode();
-    capsSentence = recvMessage.upper();
-    connectionSocket.send(capsSentence.encode());
+    if recvMessage == "GET_BOARDS":
+        boardList = os.listdir("./board");
+        boardListToSend = pickle.dumps(boardList);
+        print(boardList);
+        connectionSocket.send(boardListToSend);
+    else:
+        sendMessage = "did not receive";
+        connectionSocket.send(sendMessage.encode());
     connectionSocket.close();
