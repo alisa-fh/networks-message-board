@@ -16,6 +16,9 @@ while True:
     recvMessage = connectionSocket.recv(1024).decode();
     if recvMessage == "GET_BOARDS":
         boardList = os.listdir("./board");
+        for item in boardList:
+            if item[0] == '.':
+                boardList.remove(item);
         boardListToSend = pickle.dumps(boardList);
         print(boardList);
         connectionSocket.send(boardListToSend);
