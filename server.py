@@ -11,7 +11,7 @@ try:
     serverSocket.bind((serverIP, serverPort));
     portConnected = True;
 except error as e:
-        print("Port is unavailable");
+        print("ERROR: Port is unavailable");
         print("Specific error: " + str(e));
         portConnected = False;
         serverSocket.close();
@@ -32,6 +32,11 @@ if portConnected:
                     for item in boardList:
                         if item[0] == '.':
                             boardList.remove(item);
+                    if len(boardList) == 0:
+                        print("ERROR: No message boards defined");
+                        connectionSocket.send(pickle.dumps(101));
+                        serverSocket.close()
+                        break
                     boardListToSend = pickle.dumps(boardList);
                     print(boardList);
                     connectionSocket.send(boardListToSend);

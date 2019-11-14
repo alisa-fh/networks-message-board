@@ -11,6 +11,8 @@ def formatBoardList(aBoardList):
 def printError(errorVal):
     if errorVal == 100:
         print("Invalid Request sent");
+    if errorVal == 101:
+        print("No message boards have been defined");
 
 
 serverIP = (sys.argv[1]);
@@ -22,6 +24,8 @@ try:
     boardList = clientSocket.recv(1024);
     if pickle.loads(boardList) == 100:
         printError(100);
+    elif pickle.loads(boardList) == 101:
+        printError(101);
     else:
         fBoardList = formatBoardList(boardList);
         print('Message boards: ', fBoardList);
