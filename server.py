@@ -14,15 +14,19 @@ print('Server is ready to receive');
 while True:
     connectionSocket, addr = serverSocket.accept();
     recvMessage = connectionSocket.recv(1024).decode();
-    if recvMessage == "GET_BOARDS":
-        boardList = os.listdir("./board");
-        for item in boardList:
-            if item[0] == '.':
-                boardList.remove(item);
-        boardListToSend = pickle.dumps(boardList);
-        print(boardList);
-        connectionSocket.send(boardListToSend);
-    else:
-        sendMessage = "did not receive";
-        connectionSocket.send(sendMessage.encode());
-    connectionSocket.close();
+
+    try:
+        if recvMessage:
+            if recvMessage == "GET_BOARDS":
+                boardList = os.listdir("./board");
+                for item in boardList:
+                    if item[0] == '.':
+                        boardList.remove(item);
+                boardListToSend = pickle.dumps(boardList);
+                print(boardList);
+                connectionSocket.send(boardListToSend);
+            else:
+                sendMessage = 100;
+                connectionSocket.send(pickle.dumps(sendMessage));
+    finally:
+        connectionSocket.close();
