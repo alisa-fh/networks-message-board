@@ -18,7 +18,7 @@ serverPort = int(sys.argv[2]);
 clientSocket = socket(AF_INET, SOCK_STREAM);
 clientSocket.connect((serverIP, serverPort));
 try:
-    clientSocket.send('GET_BOARD'.encode());
+    clientSocket.send('GET_BOARDS'.encode());
     boardList = clientSocket.recv(1024);
     if pickle.loads(boardList) == 100:
         printError(100);
