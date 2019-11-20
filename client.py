@@ -10,9 +10,9 @@ def formatBoardList(aBoardList):
 
 def printError(errorVal):
     if errorVal == 100:
-        print("Invalid Request sent");
+        print("ERROR: Invalid Request sent");
     if errorVal == 101:
-        print("No message boards have been defined");
+        print("ERROR: No message boards have been defined");
 
 def getMessages(boardNum):
     clientSocket.send(('GET_MESSAGES('+boardNum+')').encode());
@@ -44,7 +44,6 @@ while True:
     boardList = clientSocket.recv(1024);
     if pickle.loads(boardList) == 100:
         printError(100);
-        getUserOptions = False;
     elif pickle.loads(boardList) == 101:
         printError(101);
         getUserOptions = False;
@@ -63,9 +62,14 @@ while True:
                 sys.exit();
             elif userSelect == "POST":
                 returnData = postMessage(len(fBoardList));
-                print(returnData);
+                if returnData == 100:
+                    printError(100);
+                else:
+                    print(returnData);
             elif userSelect.isdigit():
                 displayMsg = getMessages(userSelect);
+                if displayMsg == '100':
+                    printError(100);
                 if displayMsg == '102':
                     print("ERROR: Input is not a board number");
                     inputError = True;
