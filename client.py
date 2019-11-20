@@ -15,8 +15,11 @@ def printError(errorVal):
         print("ERROR: No message boards have been defined");
 
 def getMessages(boardNum):
-    clientSocket.send(('GET_MESSAGES('+boardNum+')').encode());
-    rtnMsg = pickle.loads(clientSocket.recv(1024));
+    try:
+        clientSocket.send(('GET_MESSAGES('+boardNum+')').encode());
+        rtnMsg = pickle.loads(clientSocket.recv(1024));
+    except timeout:
+        timeoutError();
     return rtnMsg;
 
 def postMessage(numBoards):
@@ -29,28 +32,51 @@ def postMessage(numBoards):
     msgName = msgName.replace(' ', '_');
     msgContents = input("Content of your message: \n");
     sendData = 'POST_MESSAGE' + '\n' + str(boardNum) + '\n' + msgName + '\n' + msgContents;
-    clientSocket.send(sendData.encode());
-    status = pickle.loads(clientSocket.recv(1024));
+    try:
+        clientSocket.send(sendData.encode());
+        status = pickle.loads(clientSocket.recv(1024));
+    except timeout:
+        timeoutError();
     return status;
+
+def timeoutError():
+    print("ERROR: The server timed out");
+    clientSocket.close();
+    sys.exit();
+
 
 
 serverIP = (sys.argv[1]);
 serverPort = int(sys.argv[2]);
 clientSocket = socket(AF_INET, SOCK_STREAM);
-clientSocket.connect((serverIP, serverPort));
+clientSocket.settimeout(10);
+
+result = clientSocket.connect_ex((serverIP, serverPort));
+if result != 0:
+    print("ERROR: Server is not running on this port. ");
+    clientSocket.close();
+    sys.exit();
+
 while True:
     getUserOptions = True;
-    clientSocket.send('GET_BOARDS'.encode());
-    boardList = clientSocket.recv(1024);
+    try:
+        clientSocket.send('GET_BOARDS'.encode());
+        boardList = clientSocket.recv(1024);
+    except timeout:
+        timeoutError();
     if pickle.loads(boardList) == 100:
         printError(100);
     elif pickle.loads(boardList) == 101:
         printError(101);
         getUserOptions = False;
         break;
-    else:
+    elif isinstance(pickle.loads(boardList), list) == True:
         fBoardList = formatBoardList(boardList);
-        print('Boards retrieved successfully! \n Message boards: ', fBoardList);
+        print('Boards retrieved successfully! \n Message boards: ');
+        for item in fBoardList:
+            print(item);
+    else:
+        print('ERROR: ', pickle.loads(boardList));
     while getUserOptions == True:  # instead of while True
         inputError = True;
         while inputError == True:
@@ -76,7 +102,10 @@ while True:
                 elif displayMsg == []:
                     print('No messages yet in this board');
                 else:
-                    print('Latest Messages From This Board: ', displayMsg);
+                    print('Successful Retrieval of Messages!');
+                    print('Latest Messages From This Board: ');
+                    for message in displayMsg:
+                        print(message);
             else:
                 print("ERROR: Invalid input, try again")
                 inputError = True;

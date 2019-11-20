@@ -7,7 +7,7 @@ import datetime;
 
 def getMessages(aBoardList, aBoardNum):
     if aBoardNum > 0 and aBoardNum <= len(aBoardList):
-        aBoardName = aBoardList[boardNum-1];
+        aBoardName = aBoardList[aBoardNum-1];
         thePath = os.getcwd() + '/board/'+ aBoardName +'/*';
         print(thePath);
         allFiles = glob.glob(thePath);
@@ -35,10 +35,10 @@ def postMessage(boardList, boardNum, msgTitle, msgContents):
         aFile = open(completeFileName, 'w+');
         aFile.write(msgContents);
         aFile.close();
-        return "success";
-    except:
+        return "Successfully Posted!";
+    except error as e:
         print('an error has occurred');
-        return "error";
+        return "ERROR: details -" + e;
 
 serverIP = (sys.argv[1]);
 serverPort = int(sys.argv[2]);
@@ -62,17 +62,23 @@ if portConnected:
         recvMessage = connectionSocket.recv(1024).decode();
         if recvMessage:
             if recvMessage == "GET_BOARDS":
-                boardList = os.listdir("./board");
-                for item in boardList:
-                    if item[0] == '.':
-                        boardList.remove(item);
-                if len(boardList) == 0:
-                    print("ERROR: No message boards defined");
-                    connectionSocket.send(pickle.dumps(101));
-                    serverSocket.close()
+                try:
+                    boardList = os.listdir("./board");
+                    for item in boardList:
+                        if item[0] == '.':
+                            boardList.remove(item);
+                    if len(boardList) == 0:
+                        print("ERROR: No message boards defined");
+                        connectionSocket.send(pickle.dumps(101));
+                        serverSocket.close();
+                        break;
+                    boardListToSend = pickle.dumps(boardList);
+                    connectionSocket.send(boardListToSend);
+                except error as e:
+                    errorToSend = pickle.dumps(e);
+                    connectionSocket.send(e);
+                    serverSocket.close();
                     break;
-                boardListToSend = pickle.dumps(boardList);
-                connectionSocket.send(boardListToSend);
             elif recvMessage[0:13] == "GET_MESSAGES(":
                 boardNum = recvMessage[13:len(recvMessage)-1];
                 rtnMessages = getMessages(boardList, int(boardNum));
