@@ -14,9 +14,8 @@ def printError(errorVal):
     if errorVal == 101:
         print("No message boards have been defined");
 
-def getMessages(boardIndex, boardList):
-    boardName = boardList[boardIndex].split()[1];
-    clientSocket.send(('GET_MESSAGES('+boardName+')').encode());
+def getMessages(boardNum):
+    clientSocket.send(('GET_MESSAGES('+boardNum+')').encode());
     rtnMsg = pickle.loads(clientSocket.recv(1024));
     return rtnMsg;
 
@@ -65,16 +64,18 @@ while True:
             elif userSelect == "POST":
                 returnData = postMessage(len(fBoardList));
                 print(returnData);
-            elif int(userSelect) in range(1, (len(fBoardList) + 1)):
-                print("board number selected");
-                displayMsg = getMessages((int(userSelect) - 1), fBoardList);
-                if displayMsg == []:
+            elif userSelect.isdigit():
+                displayMsg = getMessages(userSelect);
+                if displayMsg == '102':
+                    print("ERROR: Input is not a board number");
+                    inputError = True;
+                elif displayMsg == []:
                     print('No messages yet in this board');
                 else:
                     print('Latest Messages From This Board: ', displayMsg);
             else:
                 print("ERROR: Invalid input, try again")
-                inputError == True;
+                inputError = True;
 
 
 

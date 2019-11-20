@@ -5,20 +5,24 @@ import os;
 import pickle;
 import datetime;
 
-def getMessages(aBoardName):
-    thePath = os.getcwd() + '/board/'+ aBoardName +'/*';
-    print(thePath);
-    allFiles = glob.glob(thePath);
-    sorted_files = sorted(allFiles, key=os.path.getctime);
-    rtnMessages = [];
-    i = 1;
-    while i < 101 and i < len(sorted_files) + 1:
-        with open(sorted_files[(i*-1)], "r") as aFile:
-            data = aFile.read().replace('\n', ' ');
-            aFile.close();
-        rtnMessages.append(data);
-        i += 1;
-    return rtnMessages;
+def getMessages(aBoardList, aBoardNum):
+    if aBoardNum > 0 and aBoardNum <= len(aBoardList):
+        aBoardName = aBoardList[boardNum-1];
+        thePath = os.getcwd() + '/board/'+ aBoardName +'/*';
+        print(thePath);
+        allFiles = glob.glob(thePath);
+        sorted_files = sorted(allFiles, key=os.path.getctime);
+        rtnMessages = [];
+        i = 1;
+        while i < 101 and i < len(sorted_files) + 1:
+            with open(sorted_files[(i*-1)], "r") as aFile:
+                data = aFile.read().replace('\n', ' ');
+                aFile.close();
+            rtnMessages.append(data);
+            i += 1;
+        return rtnMessages;
+    else:
+        return '102';
 
 def postMessage(boardList, boardNum, msgTitle, msgContents):
     currentDT = (str(datetime.datetime.now())[:19]).replace(' ', '-').replace(':','');
@@ -45,7 +49,6 @@ try:
     portConnected = True;
 except error as e:
         print("ERROR: Port is unavailable");
-        print("Specific error: " + str(e));
         portConnected = False;
         serverSocket.close();
 
@@ -71,8 +74,8 @@ if portConnected:
                 boardListToSend = pickle.dumps(boardList);
                 connectionSocket.send(boardListToSend);
             elif recvMessage[0:13] == "GET_MESSAGES(":
-                boardName = recvMessage[13:len(recvMessage)-1];
-                rtnMessages = getMessages(boardName);
+                boardNum = recvMessage[13:len(recvMessage)-1];
+                rtnMessages = getMessages(boardList, int(boardNum));
                 connectionSocket.send(pickle.dumps(rtnMessages));
 
             elif recvMessage.split('\n')[0] == "POST_MESSAGE":
