@@ -24,10 +24,15 @@ def getMessages(boardNum):
 
 def postMessage(numBoards):
     boardNumError = True;
+    dispErr = 0;
     while boardNumError == True:
+        if dispErr == 1:
+            print("ERROR: Not a valid board number. Try again.");
         boardNum = int(input("Select the number of the board to write to: \n"));
         if (boardNum > 0) and (boardNum <= numBoards):
             boardNumError = False;
+        else:
+            dispErr = 1;
     msgName = input("Title of your message: \n")
     msgName = msgName.replace(' ', '_');
     msgContents = input("Content of your message: \n");
@@ -94,13 +99,15 @@ while True:
                     print(returnData);
             elif userSelect.isdigit():
                 displayMsg = getMessages(userSelect);
-                if displayMsg == '100':
+                if displayMsg == 100:
                     printError(100);
-                if displayMsg == '102':
+                elif displayMsg == 102:
                     print("ERROR: Input is not a board number");
                     inputError = True;
                 elif displayMsg == []:
                     print('No messages yet in this board');
+                elif displayMsg[:5] == "ERROR":
+                    print(displayMsg);
                 else:
                     print('Successful Retrieval of Messages!');
                     print('Latest Messages From This Board: ');
