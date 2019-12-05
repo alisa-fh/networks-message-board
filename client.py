@@ -2,18 +2,21 @@ from socket import *
 import sys
 import pickle
 
+#formats the retrieved board list to be displayed
 def formatBoardList(aBoardList):
     aBoardList = pickle.loads(boardList);
     for i in range(len(aBoardList)):
         aBoardList[i] = str(i+1) + '. ' + aBoardList[i];
     return aBoardList;
 
+#uses an error code system to output the appropriate error
 def printError(errorVal):
     if errorVal == 100:
         print("ERROR: Invalid Request sent");
     if errorVal == 101:
         print("ERROR: No message boards have been defined");
 
+#sends a request to the server to retrieve the last 100 messages
 def getMessages(boardNum):
     try:
         clientSocket.send(('GET_MESSAGES('+boardNum+')').encode());
@@ -22,6 +25,7 @@ def getMessages(boardNum):
         timeoutError();
     return rtnMsg;
 
+#sends a request to the server to post a message to a specified board
 def postMessage(numBoards):
     boardNumError = True;
     dispErr = 0;
@@ -44,18 +48,20 @@ def postMessage(numBoards):
         timeoutError();
     return status;
 
+#handles a timeout error from the server
 def timeoutError():
     print("ERROR: The server timed out");
     clientSocket.close();
     sys.exit();
 
 
-
+#retrieves the serverIP and serverPort from the command line
 serverIP = (sys.argv[1]);
 serverPort = int(sys.argv[2]);
 clientSocket = socket(AF_INET, SOCK_STREAM);
 clientSocket.settimeout(10);
 
+#checks if a server is running on a particular port
 result = clientSocket.connect_ex((serverIP, serverPort));
 if result != 0:
     print("ERROR: Server is not running on this port. ");
@@ -82,6 +88,7 @@ while True:
             print(item);
     else:
         print('ERROR: ', pickle.loads(boardList));
+
     while getUserOptions == True:  # instead of while True
         inputError = True;
         while inputError == True:
@@ -118,7 +125,7 @@ while True:
                 inputError = True;
 
 
-
+#close client socket and quit program
 clientSocket.close();
 sys.exit();
 

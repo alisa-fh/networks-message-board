@@ -5,8 +5,8 @@ import os;
 import pickle;
 import datetime;
 from _thread import *;
-import threading
 
+#function used to retrieve message from a message board
 def getMessages(aBoardList, aBoardNum):
     if aBoardNum > 0 and aBoardNum <= len(aBoardList):
         try:
@@ -28,6 +28,7 @@ def getMessages(aBoardList, aBoardNum):
     else:
         return 102;
 
+#function used to post message to a chosen message board
 def postMessage(boardList, boardNum, msgTitle, msgContents):
     currentDT = (str(datetime.datetime.now())[:19]).replace(' ', '-').replace(':','');
     msgTitle = currentDT + '-' + msgTitle;
@@ -43,16 +44,20 @@ def postMessage(boardList, boardNum, msgTitle, msgContents):
         print('an error has occurred');
         return "ERROR: details -" + e;
 
+#function used to log a request made to the server
 def serverLog(clientIPPort, msgType, status):
+    #current date + time
     currentDT = datetime.datetime.now().strftime("%c");
     completeFileName = os.path.join(os.getcwd(), 'serverLog.txt');
     try:
         serverLogFile = open(completeFileName, "a+");
         serverLogFile.write(clientIPPort + '\t' + currentDT + '\t' + msgType + '\t' + status + '\n');
         serverLogFile.close();
+    #catch error
     except error as e:
         print('ERROR: serverLog error has occurred - ', e);
 
+#gets and assigns the server IP address and port from the command line
 serverIP = (sys.argv[1]);
 serverPort = int(sys.argv[2]);
 serverSocket = socket(AF_INET, SOCK_STREAM);
@@ -69,6 +74,7 @@ except error as e:
 #server begins listening for incoming TCP requests
 serverSocket.listen(5);
 
+#function for each thread
 def threaded(connectionSocket):
     print('new thread');
     while True:
@@ -124,9 +130,11 @@ def threaded(connectionSocket):
 
 while True:
     print('Server is ready to receive');
+    #accept connection from socket
     connectionSocket, addr = serverSocket.accept();
     formattedAddr = str(addr)[1:len(str(addr)) - 1].replace(', ', ':').replace("'", '');
     print("Connection from: " + str(addr));
+    #start a thread for new connection
     start_new_thread(threaded, (connectionSocket,))
 connectionSocket.close();
 serverSocket.close();
