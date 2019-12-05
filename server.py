@@ -4,13 +4,14 @@ import sys;
 import os;
 import pickle;
 import datetime;
+from _thread import *;
+import threading
 
 def getMessages(aBoardList, aBoardNum):
     if aBoardNum > 0 and aBoardNum <= len(aBoardList):
         try:
             aBoardName = aBoardList[aBoardNum-1];
             thePath = os.getcwd() + '/board/'+ aBoardName +'/*';
-            print(thePath);
             allFiles = glob.glob(thePath);
             sorted_files = sorted(allFiles, key=os.path.getctime);
             rtnMessages = [];
@@ -33,7 +34,6 @@ def postMessage(boardList, boardNum, msgTitle, msgContents):
     aBoardName = boardList[int(boardNum)-1];
     thePath = os.getcwd() + '/board/' + aBoardName;
     completeFileName = os.path.join(thePath, msgTitle + '.txt');
-    print('path ', completeFileName);
     try:
         aFile = open(completeFileName, 'w+');
         aFile.write(msgContents);
@@ -64,15 +64,13 @@ except error as e:
         print("ERROR: Port is unavailable");
         portConnected = False;
         serverSocket.close();
+        os._exit(1);
 
 #server begins listening for incoming TCP requests
-if portConnected:
-    serverSocket.listen(5);
-    print('Server is ready to receive');
-    connectionSocket, addr = serverSocket.accept();
-    formattedAddr = str(addr)[1:len(str(addr)) - 1].replace(', ', ':').replace("'", '');
-    print("Connection from: " + str(addr));
+serverSocket.listen(5);
 
+def threaded(connectionSocket):
+    print('new thread');
     while True:
         recvMessage = connectionSocket.recv(1024).decode();
         if recvMessage:
@@ -121,4 +119,14 @@ if portConnected:
                 connectionSocket.send(pickle.dumps(sendMessage));
         else:
             break;
+    return True;
     connectionSocket.close();
+
+while True:
+    print('Server is ready to receive');
+    connectionSocket, addr = serverSocket.accept();
+    formattedAddr = str(addr)[1:len(str(addr)) - 1].replace(', ', ':').replace("'", '');
+    print("Connection from: " + str(addr));
+    start_new_thread(threaded, (connectionSocket,))
+connectionSocket.close();
+serverSocket.close();
